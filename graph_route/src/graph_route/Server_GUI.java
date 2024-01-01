@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,12 +29,18 @@ import javax.swing.JTextArea;
 
 public class Server_GUI {
 	private List<Socket> clientSockets = new ArrayList<>();
+	
 	private JFrame frame;
 
     private JTextArea logTextArea;
     private ServerSocket serverSocket;
     private boolean isServerRunning;
-    public static final int port = 5056;
+    public static final int port = 1234;
+    static Connection con = null;
+	ResultSet rs = null;
+	static PreparedStatement pst = null;
+    
+    
     
     public static void main(String[] args) {
     EventQueue.invokeLater(new Runnable() {
@@ -49,117 +58,115 @@ public class Server_GUI {
     
     public Server_GUI() {
         initialize();
+        con = database.mycon();
      
     }
     
     private void initialize() {
-        frame = new JFrame();
-        frame.setTitle("Server");
-        frame.setBounds(100, 100, 748, 454);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.getContentPane().setLayout(null);
-        frame.setBackground(Color.WHITE);
+    	 frame = new JFrame();
+         frame.setTitle("Server");
+         frame.setBounds(100, 100, 748, 454);
+         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+         frame.getContentPane().setLayout(null);
+         frame.setBackground(Color.WHITE);
 
 
 
-        JButton startButton = new JButton("START");
-        startButton.setBackground(new Color(0x48b281));
+         JButton startButton = new JButton("START");
+         startButton.setBackground(new Color(0x48b281));
 
-        startButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                startServer();
-            }
-        });
-//        startButton.setBounds(357, 64, 100, 36);
-        startButton.setBounds(200, 64, 90, 36);
-        startButton.setFont(new Font("Tahoma", Font.PLAIN, 18));
-        frame.getContentPane().add(startButton);
+         startButton.addActionListener(new ActionListener() {
+             public void actionPerformed(ActionEvent e) {
+                 startServer();
+             }
+         });
+//         startButton.setBounds(357, 64, 100, 36);
+         startButton.setBounds(200, 64, 90, 36);
+         startButton.setFont(new Font("Tahoma", Font.PLAIN, 18));
+         frame.getContentPane().add(startButton);
 
-        JButton stopButton = new JButton("STOP");
-        stopButton.setBackground(new Color(0x48b281));
-        stopButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                stopServer();
-            }
-        });
-        stopButton.setFont(new Font("Tahoma", Font.PLAIN, 18));
-        stopButton.setBounds(450, 64, 90, 36);
-        frame.getContentPane().add(stopButton);
+         JButton stopButton = new JButton("STOP");
+         stopButton.setBackground(new Color(0x48b281));
+         stopButton.addActionListener(new ActionListener() {
+             public void actionPerformed(ActionEvent e) {
+                 stopServer();
+             }
+         });
+         stopButton.setFont(new Font("Tahoma", Font.PLAIN, 18));
+         stopButton.setBounds(450, 64, 90, 36);
+         frame.getContentPane().add(stopButton);
 
-        logTextArea = new JTextArea();
-        logTextArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(logTextArea);
-        scrollPane.setBounds(140, 126, 441, 236);
-        frame.getContentPane().add(scrollPane);
+         logTextArea = new JTextArea();
+         logTextArea.setEditable(false);
+         JScrollPane scrollPane = new JScrollPane(logTextArea);
+         scrollPane.setBounds(140, 126, 441, 236);
+         frame.getContentPane().add(scrollPane);
     }
     
     
     private void startServer() {
         if (!isServerRunning) {
            
-            try {
-                serverSocket = new ServerSocket(port);
-                logTextArea.append("Server is running on port " + port + ". Waiting for clients...\n");
-                
-                isServerRunning = true;
+        	 try {
+                 serverSocket = new ServerSocket(port);
+                 logTextArea.append("Server is running on port " + port + ". Waiting for clients...\n");
+                 
+                 isServerRunning = true;
 
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        while (isServerRunning) {
-                            try {
-                                Socket clientSocket = serverSocket.accept();
-                                
-                                logTextArea.append("Client connected: " + clientSocket + "\n");
-                                clientSockets.add(clientSocket);
-                                DataInputStream dis = new DataInputStream(clientSocket.getInputStream()); 
-                            	
-               	             DataOutputStream dos = new DataOutputStream(clientSocket.getOutputStream()); 
-               	          logTextArea.append("Assigning new thread for this client\n");
-               	             System.out.println("Assigning new thread for this client"); 
+                 new Thread(new Runnable() {
+                     @Override
+                     public void run() {
+                         while (isServerRunning) {
+                             try {
+                                 Socket clientSocket = serverSocket.accept();
+                                 
+                                 logTextArea.append("Client connected: " + clientSocket + "\n");
+                                 clientSockets.add(clientSocket);
+                                 DataInputStream dis = new DataInputStream(clientSocket.getInputStream()); 
+                             	
+                	             DataOutputStream dos = new DataOutputStream(clientSocket.getOutputStream()); 
+                	          logTextArea.append("Assigning new thread for this client\n");
+                	             System.out.println("Assigning new thread for this client"); 
 
-               	             // create a new thread object 
-               	
-               	             Thread t = new ClientHandler(clientSocket, dis, dos); 
+                	             // create a new thread object 
+                	
+                	             Thread t = new ClientHandler(clientSocket, dis, dos); 
 
-               	             // Invoking the start() method 
-               	             t.start(); 
-//                                ClientHandler clientHandler = new ClientHandler(clientSocket);
-//                                Thread thread = new Thread(clientHandler);
-//                                thread.start();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }).start();
-            } catch (IOException e) {
-            	
-                e.printStackTrace();
-            }
+                	             // Invoking the start() method 
+                	             t.start(); 
+
+                             } catch (IOException e) {
+                                 e.printStackTrace();
+                             }
+                         }
+                     }
+                 }).start();
+             } catch (IOException e) {
+             	
+                 e.printStackTrace();
+             }
         }
     }
     
     
-
     private void stopServer() {
-        if (isServerRunning) {
-            try {
-                isServerRunning = false;
-                serverSocket.close();
-                
-                // Đóng tất cả các kết nối cụ thể với máy khách
-                for (Socket clientSocket : clientSockets) {
-                    clientSocket.close();
-                }
-                
-                logTextArea.append("Server stopped.\n");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+    	 if (isServerRunning) {
+             try {
+                 isServerRunning = false;
+                 serverSocket.close();
+                 
+                 // Đóng tất cả các kết nối cụ thể với máy khách
+                 for (Socket clientSocket : clientSockets) {
+                     clientSocket.close();
+                 }
+                 
+                 logTextArea.append("Server stopped.\n");
+             } catch (IOException e) {
+                 e.printStackTrace();
+             }
+         }
     }
-
+    
     class ClientHandler extends Thread  
     { 
 
@@ -185,14 +192,19 @@ public class Server_GUI {
 
 
 
+@Override
 
-	 
-	 @Override
-	 public void run() {
-	     String received;
+public void run()  
 
-	     while (true) {
-	         try {
+{ 
+
+    String received; 
+
+
+    while (true)  
+    { 
+
+    	   try {
 	             // Kiểm tra xem Socket có đang mở không
 	             if (!s.isClosed()) {
 	                 received = dis.readUTF();
@@ -211,10 +223,14 @@ public class Server_GUI {
 	                     break;
 	                 }
 
-	                 String ans = processMessage(received);
-	                 logTextArea.append("\n" + s + ": " + ans);
-	                 dos.writeUTF(ans);
-	                 dos.flush();
+	                 String ans = process(received);
+	                 
+	     			
+	        		 logTextArea.append(s +": " + ans);
+	        		dos.writeUTF(ans);
+	        		dos.flush();
+
+	            	
 	             } else {
 	                 // Socket đã đóng, thoát khỏi vòng lặp
 	                 break;
@@ -227,35 +243,142 @@ public class Server_GUI {
 	                 e.printStackTrace();
 	             }
 	         }
-	     }
+    }       
 
-	     try {
-	         this.dis.close();
-	         this.dos.close();
-	     } catch (IOException e) {
-	         e.printStackTrace();
-	     }
-	 }
+    
+    try
 
+    { 
 
-private static String processMessage(String message) {
+        this.dis.close(); 
+
+        this.dos.close(); 
+
+    }catch(IOException e){ 
+
+        e.printStackTrace(); 
+
+    } 
+
+} 
+
+private static String process(String message) {
+	String ans = "";
 	String[] strArray = message.split("\\s+");
-	int S = Integer.parseInt(strArray[0]);
-	int F = Integer.parseInt(strArray[1]);
-	int n = Integer.parseInt(strArray[2]);
-	
-	System.out.println(message);
-	
-	int[][] graph = new int[n + 5][n + 5];
-	int cnt = 2;
-	for(int i = 1; i <= n; i++) {
-		for(int j = 1; j <= n; j++) {
-			cnt++;
-			graph[i][j] = Integer.parseInt(strArray[cnt]);
+	String status = strArray[0];
+	if(status.equals("Login")) {
+		String un = strArray[1];
+		String ps = strArray[2];
+		System.out.println(message + "\n" + un + ", " + ps);
+		
+
+			try {
+				
+				String sql = "SELECT * FROM user WHERE username = ? AND password = ?";
+				pst = con.prepareStatement(sql);
+				pst.setString(1, un); // user
+				pst.setString(2, ps);//pass
+				
+				ResultSet rs = pst.executeQuery();
+				if(rs.next()) {
+					ans = "login is correct";
+					System.out.println("\ncorrect" );
+					
+				}else {
+					ans = "login is incorrect";
+					System.out.println("\nIncorrect" );
+					
+					
+				}
+			} catch ( Exception e1) {
+				// TODO: handle exception
+				System.out.println(e1);
+			}
+			
+	}else if(status.equals("Register")) {
+
+		try {
+		    String un = strArray[1];
+		    String ps = strArray[2];
+
+		    // Check if the username already exists
+		    String checkUsernameQuery = "SELECT COUNT(*) FROM user WHERE username=?";
+		    pst = con.prepareStatement(checkUsernameQuery);
+		    pst.setString(1, un);
+		    ResultSet resultSet = pst.executeQuery();
+
+		    if (resultSet.next() && resultSet.getInt(1) > 0) {
+		        // Username already exists, return an appropriate message
+		        ans = "Choose a different username";
+		        System.out.println("\nUsername already exists, choose a different one");
+		    } else {
+		        // Username is unique, proceed with the insert
+		        String insertQuery = "INSERT INTO user (username, password) VALUES (?, ?)";
+		        pst = con.prepareStatement(insertQuery);
+		        pst.setString(1, un);
+		        pst.setString(2, ps);
+
+		        int rowsAffected = pst.executeUpdate();
+
+		        if (rowsAffected > 0) {
+		            ans = "Register is correct";
+		            System.out.println("\nRegistration is correct");
+		        } else {
+		            ans = "Register is incorrect";
+		            System.out.println("\nRegistration is incorrect");
+		        }
+		    }
+
+		} catch (Exception e2) {
+		    e2.printStackTrace();
+		    // Handle the exception
 		}
+
+		
+	}else if(status.equals("Dij")) {
+		String un = strArray[1];
+		
+		
+		try {
+			
+			String sql = "INSERT INTO data (user, matrix ) VALUES (?,?)";
+			pst = con.prepareStatement(sql);
+			pst.setString(1, un); // user
+			pst.setString(2, message.substring(un.length() + 4)); // message without Dij + " " + un + " "
+			
+			
+			int rowsAffected = pst.executeUpdate();
+
+	        if (rowsAffected > 0) {
+	            System.out.println("\nInsert is correct");
+	        } else {
+	            System.out.println("\nInsert is incorrect");
+	        }
+	        
+		} catch ( Exception e1) {
+			// TODO: handle exception
+			System.out.println(e1);
+		}
+		
+		int S = Integer.parseInt(strArray[2]);
+		int F = Integer.parseInt(strArray[3]);
+		int n = Integer.parseInt(strArray[4]);
+		
+		System.out.println(message);
+		
+		int[][] graph = new int[n + 5][n + 5];
+		int cnt = 4;
+		for(int i = 1; i <= n; i++) {
+			for(int j = 1; j <= n; j++) {
+				cnt++;
+				graph[i][j] = Integer.parseInt(strArray[cnt]);
+			}
+		}
+		
+		 ans += "Dij" + " " +  Dijkstra(S, F, n, graph);
+		 System.out.println("dij: "+ ans);
+		
 	}
-	
-	String ans = Dijkstra(S, F, n, graph);
 	
 	return ans;
 }
@@ -302,8 +425,7 @@ private static String Dijkstra(int S, int F, int n, int graph[][]) {
 	            trace[v] = u;
 	        }
 	    }
-//	    for(int j = 1; j <= n; j++) System.out.print(distances[j] + " ");
-//	    System.out.println("");
+
 	
 	}
 	
@@ -330,7 +452,7 @@ private static String Dijkstra(int S, int F, int n, int graph[][]) {
 		kq[cnt] = u;
 		ret = ret + i + ": ";
 		for(int j = cnt; j > 0; j--)
-			ret = ret + kq[j] + " -> ";
+			ret = ret + kq[j] + "->";
 		ret = ret + kq[0] + "\n";
 	}
 	ret = ret + "\n";
@@ -361,7 +483,7 @@ private static String Dijkstra(int S, int F, int n, int graph[][]) {
 	return ret;
 }
     
-    
+
     
     }
 }

@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseAdapter;
@@ -12,7 +13,9 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Random;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class DrawPanel extends JPanel {
@@ -78,7 +81,7 @@ public class DrawPanel extends JPanel {
 							midX = (int) ((v1Ellipse2d.getCenterX() + edge.diemdau2.el.getCenterX()) / 2 + 10);
 							midY = (int) ((v1Ellipse2d.getCenterY() + edge.diemdau2.el.getCenterY()) / 2 + 10);
 
-							graph.resetEdge(line2d, j, midX, midY);
+							graph.resetEdge(line2d, j, midX, midY);        
 
 						} else if (edge.diemdau2.el == v1.el) {
 							line2d = new Line2D.Double(edge.diemdau1.el.getCenterX(), edge.diemdau1.el.getCenterY(),
@@ -89,6 +92,28 @@ public class DrawPanel extends JPanel {
 
 						}
 					}
+					
+					
+					for (int j = 0; j < graph.danhSachKq.size(); j++) {
+						Edge edge = graph.danhSachKq.get(j);
+						if (edge.diemdau1.el == v1.el) {
+							line2d = new Line2D.Double(v1.el.getCenterX(), v1.el.getCenterY(),
+									edge.diemdau2.el.getCenterX(), edge.diemdau2.el.getCenterY());
+							midX = (int) ((v1Ellipse2d.getCenterX() + edge.diemdau2.el.getCenterX()) / 2 + 10);
+							midY = (int) ((v1Ellipse2d.getCenterY() + edge.diemdau2.el.getCenterY()) / 2 + 10);
+
+							graph.resetEdgeKq(line2d, j, midX, midY);        
+
+						} else if (edge.diemdau2.el == v1.el) {
+							line2d = new Line2D.Double(edge.diemdau1.el.getCenterX(), edge.diemdau1.el.getCenterY(),
+									v1.el.getCenterX(), v1.el.getCenterY());
+							midX = (int) ((edge.diemdau1.el.getCenterX() + v1Ellipse2d.getCenterX()) / 2 + 10);
+							midY = (int) ((edge.diemdau1.el.getCenterY() + v1Ellipse2d.getCenterY()) / 2 + 10);
+							graph.resetEdgeKq(line2d, j, midX, midY);
+
+						}
+					}
+					
 					pressX += dx;
 					pressY += dy;
 
@@ -104,9 +129,9 @@ public class DrawPanel extends JPanel {
 			clickX = e.getX();
 			clickY = e.getY();
 
-			if (startDir) {
+		
+//			if (startUnDir) {
 
-				// add edge co huong
 				for (int i = 0; i < graph.danhSachDinh.size(); i++) {
 					if (graph.danhSachDinh.get(i).el.contains(clickX, clickY)) {
 
@@ -115,57 +140,38 @@ public class DrawPanel extends JPanel {
 							return;
 						} else {
 							if (selected1 != null && selected1 != graph.danhSachDinh.get(i)) {
+								
 								selected2 = graph.danhSachDinh.get(i);
+								
+								
+								trongso= GUI.trongField.getText().toString();
+								if(Integer.parseInt(trongso) <= 0 || trongso == null) {
+									JOptionPane.showMessageDialog(null, "Weight is invalid. Please re-enter.", "Error",
+					                        JOptionPane.WARNING_MESSAGE);
+									
+								}else {
+									line2d = new Line2D.Double(selected1.el.getCenterX(), selected1.el.getCenterY() ,
+											selected2.el.getCenterX(), selected2.el.getCenterY() );
+									graph.themCanhVoHuong(selected1, selected2, line2d, trongso);
 
-								line2d = new Line2D.Double(selected1.el.getCenterX(), selected1.el.getCenterY(),
-										selected2.el.getCenterX(), selected2.el.getCenterY());
-								graph.themCanhCoHuong(selected1, selected2, line2d, trongso);
+									selected1 = null;
+									selected2 = null;
+									
+								}
 
-								selected1 = null;
-								selected2 = null;
+								
 							}
 							return;
 						}
 					}
 					repaint();
 				}
-
+			
 				Ellipse2D el = new Ellipse2D.Double(clickX, clickY, 30, 30);
 				graph.themDinh(el);
 				repaint();
 
-			}
-			if (startUnDir) {
-
-				// add edge vo huong
-				for (int i = 0; i < graph.danhSachDinh.size(); i++) {
-					if (graph.danhSachDinh.get(i).el.contains(clickX, clickY)) {
-
-						if (selected1 == null) {
-							selected1 = graph.danhSachDinh.get(i);
-							return;
-						} else {
-							if (selected1 != null && selected1 != graph.danhSachDinh.get(i)) {
-								selected2 = graph.danhSachDinh.get(i);
-
-								line2d = new Line2D.Double(selected1.el.getCenterX(), selected1.el.getCenterY(),
-										selected2.el.getCenterX(), selected2.el.getCenterY());
-								graph.themCanhVoHuong(selected1, selected2, line2d, trongso);
-
-								selected1 = null;
-								selected2 = null;
-							}
-							return;
-						}
-					}
-					repaint();
-				}
-
-				Ellipse2D el = new Ellipse2D.Double(clickX, clickY, 30, 30);
-				graph.themDinh(el);
-				repaint();
-
-			}
+//			}
 		}
 	};
 
@@ -173,13 +179,49 @@ public class DrawPanel extends JPanel {
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D) g;
 
-		if (startUnDir || startDir) {
+			
+		for (Edge edge : graph.danhSachCanh) {
+			
+			g2.setColor(new Color(0x397d5a));
+			
+			  float strokeWidth = 1.5f; 
+                g2.setStroke(new BasicStroke(strokeWidth));
+
+			
+
+			g2.draw(edge.line2d);
+			
+			g2.setFont(new Font("Arial", Font.BOLD, 14));
+
+			g2.setColor(Color.black);
+	
+			g2.drawString("" + edge.getWeight(), edge.getCenterEdgeX(), edge.getCenterEdgeY());
+		
+		}
+			
+			
+			for (Edge edge : graph.danhSachKq) {
+		
+				g2.setColor(new Color(0xb70b0b));
+				
+				  float strokeWidth = 1.6f; // Điều chỉnh độ dày
+	                g2.setStroke(new BasicStroke(strokeWidth));
+
+				
+
+				g2.draw(edge.line2d);
+				
+				
+
+			}
+			
+			
 			
 			for (Vertex vertex : graph.danhSachDinh) {
+				
 				vertex.ten = vertex.index + 1;
 				g2.setColor(new Color(0x397d5a));
 
-//				g2.setColor(Color.blue);
 				g2.fill(vertex.el);
 				g2.setColor(Color.WHITE);
 				g2.setFont(new Font("Arial", Font.BOLD, 14));
@@ -187,43 +229,12 @@ public class DrawPanel extends JPanel {
 						(int) vertex.el.getCenterY() + unit);
 
 			}
-			for (Edge edge : graph.danhSachCanh) {
-//		
-				g2.setColor(new Color(0x397d5a));
-				
-				  float strokeWidth = 1.5f; // Điều chỉnh độ dày
-	                g2.setStroke(new BasicStroke(strokeWidth));
-
-				
-
-				g2.draw(edge.line2d);
-				
-				if (startDir) {
-					g2.setColor(Color.CYAN);
-					int dx = (int) (edge.line2d.getX2() - edge.line2d.getX1());
-					int dy = (int) (edge.line2d.getY2() - edge.line2d.getY1());
-					double D = Math.sqrt(dx * dx + dy * dy);
-					double xm = D - 10, xn = xm, ym = 5, yn = -5, x;
-					double sin = dy / D, cos = dx / D;
-					x = xm * cos - ym * sin + edge.line2d.getX1();
-					ym = xm * sin + ym * cos + edge.line2d.getY1();
-					xm = x;
-					x = xn * cos - yn * sin + edge.line2d.getX1();
-					yn = xn * sin + yn * cos + edge.line2d.getY1();
-					xn = x;
-					int[] xpoints = { (int) edge.line2d.getX2(), (int) xm, (int) xn };
-					int[] ypoints = { (int) edge.line2d.getY2(), (int) ym, (int) yn };
-
-					g2.fillPolygon(xpoints, ypoints, 3);
-				}
-				g2.setColor(Color.black);
-//				g2.setColor(new Color(0x397d5a));
-				g2.drawString("" + edge.getWeight(), edge.getCenterEdgeX(), edge.getCenterEdgeY());
-			}
+			
+			
+			
 			repaint();
 			
-		}
-		repaint();
+		
 	}
 
 //	=========================== draw Edge
@@ -242,31 +253,64 @@ public class DrawPanel extends JPanel {
 				if (v.isVertexName(v2Name)) {
 					v2 = v;
 				}
+			}
 
+			line2d = new Line2D.Double(v1.el.getCenterX(), v1.el.getCenterY() , v2.el.getCenterX(), v2.el.getCenterY());
+
+			midX = (int) ((v1.el.getCenterX() + v2.el.getCenterX()) / 2 + 10);
+			midY = (int) ((v1.el.getCenterY() + v2.el.getCenterY()) / 2 + 10);
+		
+			if (startUnDir) {
+				graph.themCanhVoHuong(v1, v2, line2d, trongso);
+				
+
+				return true;
+			}
+		}
+		return false;
+	}
+	//=================
+	
+	public boolean drawEdgeKq(int v1Name, int v2Name) {
+		Vertex v1 = null;
+		Vertex v2 = null;
+
+		
+
+		if (v1Name != 0 && v2Name != 0 ) {
+
+			for (Vertex v : graph.danhSachDinh) {
+				if (v.isVertexName(v1Name)) {
+					v1 = v;
+				}
+				if (v.isVertexName(v2Name)) {
+					v2 = v;
+				}
 			}
 
 			line2d = new Line2D.Double(v1.el.getCenterX(), v1.el.getCenterY(), v2.el.getCenterX(), v2.el.getCenterY());
 
 			midX = (int) ((v1.el.getCenterX() + v2.el.getCenterX()) / 2 + 10);
 			midY = (int) ((v1.el.getCenterY() + v2.el.getCenterY()) / 2 + 10);
-
-			if (!startUnDir) {
-				graph.themCanhCoHuong(v1, v2, line2d, trongso);
-				return true;
-			}
-			if (startUnDir) {
-				graph.themCanhVoHuong(v1, v2, line2d, trongso);
-				return true;
-			}
+		
+			
+			graph.themCanhKq(v1, v2, line2d, "0");
+			
 		}
-//		}
-		return false;
+		return true;
+
+		
 	}
 
+
+
+
+	
 	// ================================= draw New page
 	public void DrawNew() {
 		graph.danhSachDinh.clear();
 		graph.danhSachCanh.clear();
+		graph.danhSachKq.clear();
 		graph.getMtk().clear();
 		startUnDir = true;
 		repaint();
@@ -319,13 +363,7 @@ public class DrawPanel extends JPanel {
 				}
 
 			}
-			if (startDir) {
-				if ((edge.diemdau1.index == d1 && edge.diemdau2.index == d2)) {
-					graph.getMtk().get(d1).set(d2, 0);
-					iterator.remove();
-					repaint();
-				}
-			}
+			
 		}
 		repaint();
 	}
@@ -347,11 +385,58 @@ public class DrawPanel extends JPanel {
 		for(int i = 1; i <= n; i++) {
 			for(int j = 1; j <= n; j++) {
 				ans += graph[i][j] + " ";
+				
 			}
+			ans += "\n";
 		}
 		return ans;
 	}
 
+	
+	public void drawGraphFromMatrix(int[][] adjacencyMatrix) {
+        int numVertices = adjacencyMatrix.length;
+        Random random = new Random();
+ 
+        // Xóa dữ liệu cũ
+        graph.danhSachDinh.clear();
+        graph.danhSachCanh.clear();
+        graph.danhSachKq.clear();
+        graph.getMtk().clear();
+ 
+        // Tạo ngẫu nhiên toạ độ các đỉnh
+        for (int i = 0; i < numVertices; i++) {
+            int x = random.nextInt(getWidth() - 30);
+            int y = random.nextInt(getHeight() - 30);
+            Ellipse2D el = new Ellipse2D.Double(x, y, 30, 30);
+            graph.themDinh(el);
+        }
+ 
+        // Thêm cạnh dựa trên ma trận kề
+        for (int i = 0; i < numVertices; i++) {
+            for (int j = i + 1; j < numVertices; j++) {
+                int weight = adjacencyMatrix[i][j];
+                if (weight > 0) {
+                    Vertex v1 = graph.danhSachDinh.get(i);
+                    Vertex v2 = graph.danhSachDinh.get(j);
+                     line2d = new Line2D.Double(v1.el.getCenterX(), v1.el.getCenterY(),
+                            v2.el.getCenterX(), v2.el.getCenterY());
+                     midX = (int) ((v1.el.getCenterX() + v2.el.getCenterX()) / 2 + 10);
+                     midY = (int) ((v1.el.getCenterY() + v2.el.getCenterY()) / 2 + 10);
+ 
+                    
+                    
+                    graph.themCanhVoHuong(v1, v2, line2d, Integer.toString(weight));
+                    
+//                    graph.resetEdge(line2d, graph.danhSachCanh.size() - 1, midX, midY);
+                }
+            }
+        }
+ 
+
+    }
+	
+	
+	
 	public void setStartUnDir(boolean startUnDir) {
 		this.startUnDir = startUnDir;
 	}

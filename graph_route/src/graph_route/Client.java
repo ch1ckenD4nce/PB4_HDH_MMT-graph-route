@@ -6,6 +6,8 @@ import java.net.Socket;
 
 
 
+
+
 public class Client {
 	private Socket socket;
     private DataInputStream dataInputStream;
@@ -42,7 +44,6 @@ public class Client {
         	String response = dataInputStream.readUTF();
 
            
-           
             return response;
         } catch (IOException e) {
             e.printStackTrace();
@@ -50,5 +51,34 @@ public class Client {
         }
 
     	
-    }  
+    } 
+    
+//    public void sendLogin(String message) {
+//        try {
+//        	dataOutputStream.writeUTF(message);
+//            dataOutputStream.flush();
+//            System.out.println("Login");
+//
+//            if (message.equalsIgnoreCase("Exit")) {
+//            	socket.close();
+//                dataInputStream.close();
+//                dataOutputStream.close();
+//                System.exit(0);
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//    
+//    public String receiveLogin() {
+//        try {
+//        	String response = dataInputStream.readUTF();
+//
+//            return response;
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return null;
+//        }
+//    }
+//    
 }
